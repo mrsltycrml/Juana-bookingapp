@@ -1,0 +1,27 @@
+{
+  "expo": {
+    "name": "Juana Beauty and Aesthetics",
+    "slug": "juana-beauty-booking",
+    "scheme": "juanabeauty",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "newArchEnabled": true,
+    "plugins": [
+      "expo-router",
+      "expo-notifications",
+      "expo-secure-store"
+    ],
+    "experiments": {
+      "typedRoutes": true
+    },
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "com.juanabeauty.booking"
+    },
+    "android": {
+      "package": "com.juanabeauty.booking",
+      "permissions": ["NOTIFICATIONS"]
+    }
+  }
+}

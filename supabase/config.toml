@@ -1,0 +1,14 @@
+[functions.create-checkout]
+verify_jwt = false
+
+[functions.payment-webhook]
+verify_jwt = false
+
+[functions.expire-reservations]
+verify_jwt = false
+
+[functions.admin-create-account]
+verify_jwt = false
+
+[functions.appointment-reminders]
+verify_jwt = false
