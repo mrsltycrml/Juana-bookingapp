@@ -6,7 +6,7 @@ import { ActionButton, Card, ErrorText, Field, Heading, Screen, colors } from "@
 import { getServicePractitioners } from "@/features/services/api";
 import { getActiveConsentForm, getSlots } from "@/features/appointments/api";
 import { supabase } from "@/lib/supabase";
-import { formatMoney } from "@/utils/format";
+import { formatServiceDuration, formatServicePrice } from "@/utils/format";
 import type { AvailableSlot } from "@/features/appointments/api";
 import type { ConsentForm } from "@/types/database";
 import { businessDateKey, manilaDate } from "@/utils/dates";
@@ -36,8 +36,8 @@ export default function WalkInScreen() {
     queryKey: ["services"],
     queryFn: async () => {
       const { data, error: queryError } = await supabase.from("services")
-        .select("id,name,price_amount,currency,duration_minutes,requires_consent")
-        .eq("is_active", true).order("name");
+        .select("id,name,price_amount,currency,duration_minutes,requires_consent,showcase_run_id")
+        .eq("is_active", true).is("showcase_run_id", null).order("name");
       if (queryError) throw queryError;
       return data;
     },
@@ -195,7 +195,7 @@ export default function WalkInScreen() {
     {services.data?.map((item) => <Pressable key={item.id} onPress={() => { setServiceId(item.id); setPractitionerId(""); setSlot(null); }}>
       <Card style={{ borderColor: serviceId === item.id ? colors.rose : colors.line }}>
         <Text style={{ color: colors.ink, fontWeight: "700" }}>{item.name}</Text>
-        <Text style={{ color: colors.muted, marginTop: 4 }}>{formatMoney(item.price_amount, item.currency)} · {item.duration_minutes} min{item.requires_consent ? " · Consent will be collected before confirmation" : ""}</Text>
+        <Text style={{ color: colors.muted, marginTop: 4 }}>{formatServicePrice(item.price_amount, item.currency)} · {formatServiceDuration(item.duration_minutes)}{item.requires_consent ? " · Consent will be collected before confirmation" : ""}</Text>
       </Card>
     </Pressable>)}
     {serviceId ? <>
@@ -235,7 +235,7 @@ export default function WalkInScreen() {
       <Text onPress={() => setManualPaid((value) => !value)} style={{ color: colors.ink, marginTop: 8 }}>{manualPaid ? "☑" : "☐"} Full payment received in person</Text>
       <Text style={{ color: colors.muted, marginTop: 5 }}>Online gateway payment is not represented as cash/manual.</Text>
       {manualPaid ? <Field label="Receipt or reference (required)" value={reference} onChangeText={setReference} /> : null}
-      <Text style={{ color: colors.ink, marginBottom: 12 }}>Appointment: {service.name} · {formatMoney(service.price_amount, service.currency)}</Text>
+      <Text style={{ color: colors.ink, marginBottom: 12 }}>Appointment: {service.name} · {formatServicePrice(service.price_amount, service.currency)}</Text>
     </Card> : null}
     {error ? <ErrorText>{error}</ErrorText> : null}
     {slot ? <ActionButton label="Create walk-in appointment" onPress={() => void create()} busy={busy} /> : null}

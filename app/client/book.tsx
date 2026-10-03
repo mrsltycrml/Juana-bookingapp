@@ -6,7 +6,7 @@ import { ActionButton, Card, ErrorText, Field, Heading, Screen, colors } from "@
 import { createCheckout, createReservation, getActiveConsentForm, getSlots, submitConsent } from "@/features/appointments/api";
 import { getActiveServices, getServicePractitioners } from "@/features/services/api";
 import { useAuth } from "@/hooks/use-auth";
-import { formatMoney } from "@/utils/format";
+import { formatServiceDuration, formatServicePrice } from "@/utils/format";
 import { businessDateKey, manilaDate } from "@/utils/dates";
 import type { AvailableSlot } from "@/features/appointments/api";
 
@@ -55,16 +55,17 @@ export default function BookScreen() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const service = services.data?.find((item) => item.id === serviceId);
+  const bookableServices = services.data?.filter((item) => !item.showcase_run_id) ?? [];
   const practitioners = useQuery({
     queryKey: ["service-practitioners", serviceId],
     queryFn: () => getServicePractitioners(serviceId),
-    enabled: !!serviceId,
+    enabled: !!serviceId && !service?.showcase_run_id,
   });
   const activePractitionerId = practitionerId || (practitioners.data?.length === 1 ? practitioners.data[0]?.id : "");
   const slots = useQuery({
     queryKey: ["availability", serviceId, activePractitionerId, date],
     queryFn: () => getSlots(serviceId, date, activePractitionerId || undefined),
-    enabled: !!serviceId && !!date,
+    enabled: !!serviceId && !!date && !service?.showcase_run_id,
   });
   const days = useMemo(() => Array.from({ length: 21 }, (_, index) => {
     return manilaDate(dateOffset + index);
@@ -85,7 +86,7 @@ export default function BookScreen() {
     && version.questions.every((question) => !question.required || answers[question.id]?.trim());
 
   const startReservation = async () => {
-    if (!serviceId || !selectedSlot || !user) return;
+    if (!serviceId || !selectedSlot || !user || service?.showcase_run_id) return;
     setBusy(true); setError("");
     try {
       const id = await createReservation(serviceId, selectedSlot.practitioner_id, selectedSlot.starts_at);
@@ -165,7 +166,7 @@ export default function BookScreen() {
       {version.requires_signature ? <Field label="Type your full name as your digital signature" value={signature} onChangeText={setSignature} /> : null}
       <Text style={{ color: colors.muted, fontSize: 12, marginBottom: 15 }}>Consent version {version.version} is stored with this appointment and will not be overwritten.</Text>
       {error ? <ErrorText>{error}</ErrorText> : null}
-      <ActionButton label={`Agree & pay ${service ? formatMoney(service.price_amount, service.currency) : ""}`} onPress={() => void submitFormAndPay()} busy={busy} disabled={!canSubmitConsent} />
+      <ActionButton label={`Agree & pay ${service ? formatServicePrice(service.price_amount, service.currency) : ""}`} onPress={() => void submitFormAndPay()} busy={busy} disabled={!canSubmitConsent} />
     </> : checkoutUrl ? <>
       <Text style={{ color: colors.muted, lineHeight: 22, marginBottom: 16 }}>The secure payment page was opened. Your booking is confirmed only after the provider verifies the full payment.</Text>
       {error ? <ErrorText>{error}</ErrorText> : null}
@@ -182,14 +183,18 @@ export default function BookScreen() {
     <Heading title="Book a treatment" subtitle="Choose a service, a day, and a time that suits you." />
     <Text style={{ color: colors.ink, fontWeight: "700", marginBottom: 10 }}>1 · Choose a service</Text>
     {services.isError ? <ErrorText>Services could not be loaded. {services.error.message}</ErrorText> : null}
-    {services.data?.map((item) => <Pressable key={item.id} onPress={() => {
+    {bookableServices.map((item) => <Pressable key={item.id} onPress={() => {
       setServiceId(item.id); setPractitionerId(""); setSelectedSlot(null); setError("");
     }}>
       <Card style={{ borderColor: serviceId === item.id ? colors.rose : colors.line, backgroundColor: serviceId === item.id ? colors.blush : colors.white }}>
         <Text style={{ color: colors.ink, fontWeight: "700", fontSize: 16 }}>{item.name}</Text>
-        <Text style={{ color: colors.muted, marginTop: 4 }}>{formatMoney(item.price_amount, item.currency)} · {item.duration_minutes} minutes{item.requires_consent ? " · Consent required" : ""}</Text>
+        <Text style={{ color: colors.muted, marginTop: 4 }}>{formatServicePrice(item.price_amount, item.currency)} · {formatServiceDuration(item.duration_minutes)}{item.requires_consent ? " · Consent required" : ""}</Text>
       </Card>
     </Pressable>)}
+    {services.data && bookableServices.length === 0 ? <Card>
+      <Text style={{ color: colors.ink, fontWeight: "700" }}>Booking is not open yet</Text>
+      <Text style={{ color: colors.muted, lineHeight: 21, marginTop: 6 }}>The current service previews are not bookable. Contact the studio to confirm service details and pricing.</Text>
+    </Card> : null}
     {serviceId ? <>
       <Text style={{ color: colors.ink, fontWeight: "700", marginTop: 12, marginBottom: 10 }}>2 · Choose a day</Text>
       <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 8 }}>
@@ -239,13 +244,13 @@ export default function BookScreen() {
     </> : null}
     {error ? <ErrorText>{error}</ErrorText> : null}
     {service?.showcase_run_id ? <Card style={{ backgroundColor: colors.blush }}>
-      <Text style={{ color: colors.ink }}>Showcase sample service. Booking and payment are disabled; sample data cannot create a real charge.</Text>
+      <Text style={{ color: colors.ink }}>This reference preview cannot be booked or paid for. Contact the studio to confirm service details and pricing.</Text>
     </Card> : null}
     {selectedSlot ? <View style={{ marginTop: 18 }}>
       <Card><Text style={{ color: colors.ink, fontWeight: "700" }}>Your selection</Text>
-        {service?.showcase_run_id ? <Text style={{ color: colors.rose, fontWeight: "800", marginTop: 6 }}>SHOWCASE SAMPLE · SAMPLE PRICE ONLY</Text> : null}
+        {service?.showcase_run_id ? <Text style={{ color: colors.rose, fontWeight: "800", marginTop: 6 }}>REFERENCE PREVIEW · PRICE NOT PUBLISHED</Text> : null}
         <Text style={{ color: colors.muted, marginTop: 6 }}>{service?.name} · {shortDate(new Date(`${date}T12:00:00`))} · {formatTime(selectedSlot.starts_at)}</Text>
-        <Text style={{ color: colors.ink, marginTop: 6 }}>Full payment: {service ? formatMoney(service.price_amount, service.currency) : ""}</Text>
+        <Text style={{ color: colors.ink, marginTop: 6 }}>Full payment: {service ? formatServicePrice(service.price_amount, service.currency) : ""}</Text>
       </Card>
       <ActionButton label={service?.showcase_run_id ? "Sample booking unavailable" : "Reserve & continue"} onPress={() => void startReservation()} busy={busy} disabled={!!service?.showcase_run_id} />
     </View> : null}

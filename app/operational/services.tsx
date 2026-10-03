@@ -9,14 +9,14 @@ import { z } from "zod";
 import { ActionButton, Card, ErrorText, Field, Heading, Screen, colors } from "@/components/ui";
 import { useAuth } from "@/hooks/use-auth";
 import { supabase } from "@/lib/supabase";
-import { formatMoney } from "@/utils/format";
+import { formatServiceDuration, formatServicePrice } from "@/utils/format";
 import type { Service } from "@/types/database";
 
 const formSchema = z.object({
   name: z.string().trim().min(2, "Enter a service name."),
   description: z.string().trim().min(2, "Enter a service description."),
   category: z.string().trim().min(2, "Enter a category."),
-  price: z.coerce.number().finite().min(0, "Price cannot be negative."),
+  price: z.coerce.number().finite().min(0.01, "Enter a confirmed service price greater than zero."),
   duration: z.coerce.number().int().min(5).max(720, "Duration must be between 5 minutes and 12 hours."),
   currency: z.string().trim().length(3).default("PHP"),
   requiresConsent: z.boolean(),
@@ -127,7 +127,7 @@ export default function ServicesManagement() {
   ]);
   if (!canView) return <Screen><Heading title="Services" subtitle="Service management is available to studio staff." /></Screen>;
   if (editorOpen) return <Screen scroll>
-    <Heading title={editing ? "Edit service" : "New service"} subtitle="Set the customer-facing price and duration." />
+    <Heading title={editing ? "Edit service" : "New service"} subtitle="Enter a confirmed price and service duration before making a service bookable." />
     {error ? <ErrorText>{error}</ErrorText> : null}
     <ServiceEditor
       visible
@@ -141,16 +141,16 @@ export default function ServicesManagement() {
     />
   </Screen>;
   return <Screen>
-    <Heading title="Services" subtitle="Create, edit, and deactivate bookable services." />
+    <Heading title="Services" subtitle="Review reference previews and manage confirmed bookable services." />
     {error ? <ErrorText>{error}</ErrorText> : null}
     {isAdmin ? <ActionButton label="Add a service" onPress={createNew} /> : null}
     {services.isError ? <ErrorText>Services could not be loaded. {services.error.message}</ErrorText> : null}
     {services.data?.map((item) => <Card key={item.id}>
       {item.image_path ? <Image source={{ uri: supabase.storage.from("service-images").getPublicUrl(item.image_path).data.publicUrl }} style={{ width: "100%", height: 145, borderRadius: 14, marginBottom: 12 }} /> : null}
-      {item.showcase_run_id ? <Text style={{ color: colors.rose, fontWeight: "800", letterSpacing: 1, fontSize: 11, marginBottom: 6 }}>DEMO SAMPLE · NOT VERIFIED STUDIO DATA</Text> : null}
+      {item.showcase_run_id ? <Text style={{ color: colors.rose, fontWeight: "800", letterSpacing: 1, fontSize: 11, marginBottom: 6 }}>PUBLIC LISTING PREVIEW · NOT BOOKABLE</Text> : null}
       <Text style={{ color: colors.rose, fontWeight: "700" }}>{item.category} · {item.is_active ? "ACTIVE" : "INACTIVE"}</Text>
       <Text style={{ color: colors.ink, fontSize: 18, fontWeight: "700", marginTop: 5 }}>{item.name}</Text>
-      <Text style={{ color: colors.muted, marginTop: 5 }}>{formatMoney(item.price_amount, item.currency)} · {item.duration_minutes} minutes</Text>
+      <Text style={{ color: colors.muted, marginTop: 5 }}>{formatServicePrice(item.price_amount, item.currency)} · {formatServiceDuration(item.duration_minutes, !!item.showcase_run_id)}</Text>
       {isAdmin ? <View style={{ flexDirection: "row", gap: 20, marginTop: 12 }}>
         <Text onPress={() => startEdit(item)} style={{ color: colors.rose, fontWeight: "600" }}>Edit</Text>
         {item.is_active ? <Text onPress={() => deactivate(item)} style={{ color: colors.muted }}>Deactivate</Text> : null}
@@ -166,7 +166,7 @@ function ServiceEditor({ visible, control, errors, busy, imageUri, onPickImage, 
 }) {
   if (!visible) return null;
   return <View style={{ position: "absolute", left: 0, right: 0, top: 0, bottom: 0, backgroundColor: colors.cream, padding: 22 }}>
-    <Heading title="Service details" subtitle="Set the customer-facing price and duration." />
+    <Heading title="Service details" subtitle="A confirmed price greater than zero is required for bookings and full-payment checkout." />
     {(["name", "description", "category", "price", "duration", "currency"] as const).map((field) => <Controller key={field} control={control} name={field}
       render={({ field: input }) => <Field label={field === "price" ? "Full price" : field === "duration" ? "Duration in minutes" : field === "name" ? "Name" : field === "description" ? "Description" : field === "category" ? "Category" : "Currency code"}
         value={String(input.value)} onChangeText={input.onChange} keyboardType={field === "price" || field === "duration" ? "phone-pad" : "default"} multiline={field === "description"} />} />)}

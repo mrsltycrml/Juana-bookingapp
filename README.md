@@ -86,7 +86,7 @@ Only configure the keys for the selected provider. Configure gateway credentials
 5. The migrations create the profile/service/practitioner/schedule/appointment/status/consent/treatment/CRM/payment/transaction/notification/preferences/settings tables, indexes and constraints, booking and consent RPCs, RLS policies, and the service-image Storage bucket. They do not insert real studio-specific services, prices, practitioners, policies, or consent text.
 6. Confirm RLS is enabled on each business table. Client data is scoped to its owner; assigned practitioners have limited appointment/customer access; front desk has operational access; admin manages configuration and staff. Sensitive changes (reservations, consent submissions, rescheduling, cancellation and treatment completion) use constrained database functions. The service-role key bypasses RLS and belongs only in trusted Edge Function configuration.
 
-If you applied the initial schema by pasting it into the Supabase SQL Editor rather than using `supabase db push`, do not re-run the already-applied initial migration. Apply pending migrations `202610030002_showcase_data.sql` and `202610030003_fix_appointment_status_history_trigger.sql` in order in the SQL Editor, or first repair the CLI migration history using the Supabase CLI.
+If you applied the initial schema by pasting it into the Supabase SQL Editor rather than using `supabase db push`, do not re-run the already-applied initial migration. Apply pending migrations `202610030002_showcase_data.sql`, `202610030003_fix_appointment_status_history_trigger.sql`, and `202610030004_align_showcase_services.sql` in order in the SQL Editor, or first repair the CLI migration history using the Supabase CLI.
 
 The app can read existing services and appointments before the showcase migration is applied. To load showcase records, however, apply the showcase migration and deploy its Edge Function; the admin showcase screen reports when this setup is missing. If Metro serves an old bundle, stop Expo and restart with `npx expo start --clear`.
 
@@ -142,13 +142,15 @@ The `expire-reservations` and `appointment-reminders` functions are protected by
 
 ### Stakeholder showcase data
 
-For a presentation, an administrator can open **More → Showcase demo data → Load showcase sample data**. First apply the pending migrations (all pending migrations with `npx supabase db push`, or `202610030002_showcase_data.sql` followed by `202610030003_fix_appointment_status_history_trigger.sql` in SQL Editor if the initial schema was applied manually), then deploy the `showcase-data` Edge Function:
+For a presentation, an administrator can open **More → Showcase demo data → Load showcase sample data**. First apply the pending migrations (all pending migrations with `npx supabase db push`, or migrations `202610030002_showcase_data.sql`, `202610030003_fix_appointment_status_history_trigger.sql`, and `202610030004_align_showcase_services.sql` in order in SQL Editor if the initial schema was applied manually), then deploy the `showcase-data` Edge Function:
 
 ```powershell
 npx supabase functions deploy showcase-data
 ```
 
-The tool creates clearly tagged sample services, two temporary practitioner accounts, four temporary client accounts, schedules, appointments, one sample treatment record, and unpaid demo-only payment placeholders. Names, prices, dates, treatments, and payment entries are fictional examples, not Juana's approved business data or real transactions. Sample service descriptions explicitly say they must be replaced; no consent language or gateway payment success is fabricated. Dashboard, calendar, service, and payment screens display demo labels.
+The showcase catalog uses the six service names listed on the public clinic reference. The site does not publish prices, and its 60-minute duration is an estimate, so previews display “Price to be confirmed” and “Approx. 60 min (estimate)”; they are not bookable. The tool also creates two temporary practitioner accounts, four temporary client accounts, placeholder schedules, sample appointments, and one clearly labelled treatment-history record. Practitioner identities, service assignments, schedules, appointment dates, customers, and treatment data are demonstrations only. It creates no payment records. No treatment suitability, consent requirement, confirmed price, or availability is inferred from the public listing.
+
+After applying the updated migration and deploying the function, remove any older active showcase run and load it again to replace the previous fictional-price service catalog. This removes only data belonging to that showcase run.
 
 Use **More → Showcase demo data → Remove all showcase data** to remove only records created by this tool and its temporary Auth accounts. The app does not show the generated account passwords or invite those accounts. Do not use showcase data with real customers; remove it before production use. Online checkout still requires payment-provider configuration and is not simulated.
 

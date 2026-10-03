@@ -5,7 +5,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { ActionButton, Card, ErrorText, Heading, Screen, colors } from "@/components/ui";
 import { cancelAppointment, getAppointments } from "@/features/appointments/api";
 import { useAuth } from "@/hooks/use-auth";
-import { formatDateTime, formatMoney } from "@/utils/format";
+import { formatDateTime, formatServicePrice } from "@/utils/format";
 import type { Appointment } from "@/types/database";
 
 export default function AppointmentsScreen() {
@@ -34,15 +34,15 @@ export default function AppointmentsScreen() {
     } },
   ]);
   const card = (appointment: Appointment) => <Card key={appointment.id}>
-    {appointment.showcase_run_id ? <Text style={{ color: colors.rose, fontWeight: "800", letterSpacing: 1, fontSize: 11 }}>SHOWCASE SAMPLE · NOT A REAL BOOKING</Text> : null}
+    {appointment.showcase_run_id ? <Text style={{ color: colors.rose, fontWeight: "800", letterSpacing: 1, fontSize: 11 }}>DEMO APPOINTMENT · NOT A REAL BOOKING</Text> : null}
     <Text style={{ color: colors.rose, fontWeight: "700" }}>{appointment.status.replaceAll("_", " ")}</Text>
     <Text style={{ color: colors.ink, fontSize: 18, fontWeight: "700", marginTop: 5 }}>{appointment.service?.name ?? "Service"}</Text>
     <Text style={{ color: colors.muted, marginTop: 6 }}>{formatDateTime(appointment.starts_at)}</Text>
-    <Text style={{ color: colors.muted, marginTop: 4 }}>Practitioner: {appointment.practitioner?.display_name ?? "To be confirmed"}</Text>
-    <Text style={{ color: colors.muted, marginTop: 4 }}>{appointment.showcase_run_id ? "SAMPLE ONLY · NOT PAID" : `Payment: ${appointment.payments?.[0]?.status ?? "PENDING"}`}</Text>
-    {appointment.service ? <Text style={{ color: colors.ink, marginTop: 8 }}>{formatMoney(appointment.service.price_amount, appointment.service.currency)}</Text> : null}
-    {["BOOKED", "TEMPORARILY_RESERVED"].includes(appointment.status) ? <ActionButton label="Cancel" variant="secondary" busy={busyId === appointment.id} onPress={() => cancel(appointment)} /> : null}
-    {appointment.status === "BOOKED" ? <Text onPress={() => router.push({ pathname: "/client/reschedule", params: { appointmentId: appointment.id } })} style={{ color: colors.rose, textAlign: "center", padding: 12 }}>Reschedule</Text> : null}
+    <Text style={{ color: colors.muted, marginTop: 4 }}>{appointment.showcase_run_id ? "Sample practitioner assignment" : `Practitioner: ${appointment.practitioner?.display_name ?? "To be confirmed"}`}</Text>
+    <Text style={{ color: colors.muted, marginTop: 4 }}>{appointment.showcase_run_id ? "DEMO ONLY · NO PAYMENT RECORD" : `Payment: ${appointment.payments?.[0]?.status ?? "PENDING"}`}</Text>
+    {appointment.service ? <Text style={{ color: colors.ink, marginTop: 8 }}>{formatServicePrice(appointment.service.price_amount, appointment.service.currency)}</Text> : null}
+    {!appointment.showcase_run_id && ["BOOKED", "TEMPORARILY_RESERVED"].includes(appointment.status) ? <ActionButton label="Cancel" variant="secondary" busy={busyId === appointment.id} onPress={() => cancel(appointment)} /> : null}
+    {!appointment.showcase_run_id && appointment.status === "BOOKED" ? <Text onPress={() => router.push({ pathname: "/client/reschedule", params: { appointmentId: appointment.id } })} style={{ color: colors.rose, textAlign: "center", padding: 12 }}>Reschedule</Text> : null}
   </Card>;
   return <Screen>
     <Heading title="Your appointments" subtitle="Upcoming visits and your appointment history." />

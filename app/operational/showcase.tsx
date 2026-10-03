@@ -57,7 +57,7 @@ export default function ShowcaseDataScreen() {
   const confirm = (action: "seed" | "clear") => {
     const title = action === "seed" ? "Load showcase data?" : "Remove showcase data?";
     const message = action === "seed"
-      ? "This creates clearly labelled sample services, two temporary practitioner accounts, four temporary client accounts, sample appointments, treatment history, and unpaid demo-only payment placeholders. It does not use real customer or business data or record a payment as successful."
+      ? "This creates preview entries for Juana's publicly listed service categories, with no published prices and estimated durations. It also creates temporary practitioner and client accounts, sample schedules, appointments and treatment history. Sample bookings are not real, and no payment records are created."
       : "This permanently removes the showcase records, temporary accounts, and any bookings or treatments created using the sample services. Other studio records are not changed.";
     if (Platform.OS === "web") {
       if (globalThis.confirm(`${title}\n\n${message}`)) void perform(action);
@@ -82,7 +82,7 @@ export default function ShowcaseDataScreen() {
       <Heading title="Showcase setup needed" subtitle="Apply the showcase database migration before loading demo data." />
       <Card style={{ backgroundColor: colors.blush, borderColor: colors.rose }}>
         <Text style={{ color: colors.ink, lineHeight: 22 }}>
-          Supabase is missing the showcase schema. In your Supabase SQL Editor, run the contents of `supabase/migrations/202610030002_showcase_data.sql` from the updated GitHub repository, then reopen this screen. Do not rerun the initial schema migration.
+          Supabase is missing the showcase schema. Apply all pending migrations from the updated GitHub repository, including `202610030004_align_showcase_services.sql`, then reopen this screen. Do not rerun the initial schema migration.
         </Text>
       </Card>
     </Screen>;
@@ -93,7 +93,7 @@ export default function ShowcaseDataScreen() {
     <Card style={{ backgroundColor: colors.blush, borderColor: colors.rose }}>
       <Text style={{ color: colors.rose, fontWeight: "800", letterSpacing: 1 }}>DEMO DATA ONLY</Text>
       <Text style={{ color: colors.ink, lineHeight: 22, marginTop: 8 }}>
-        All names, services, schedules, prices, appointments, treatment notes, and manual payment entries are synthetic examples. They are not Juana business data, real customers, or real payments. Sample prices are not verified prices.
+      Service names and clinic details come from Juana&apos;s public reference. Prices are not published and sample durations are estimates. Practitioner assignments, schedules, appointments, and treatment notes are for demonstration only; no payment records are created.
       </Text>
     </Card>
     {errorMessage ? <ErrorText>{errorMessage}</ErrorText> : null}
@@ -103,7 +103,8 @@ export default function ShowcaseDataScreen() {
       <Card>
         <Text style={{ color: colors.ink, fontWeight: "700", fontSize: 17 }}>Sample data is loaded</Text>
         <Text style={{ color: colors.muted, marginTop: 7 }}>Created {new Date(run.data.record.created_at).toLocaleString()}</Text>
-        <Text style={{ color: colors.muted, marginTop: 7 }}>Browse the operational calendar, appointments, customers, payments, services, and treatment history to see the populated experience.</Text>
+        <Text style={{ color: colors.muted, marginTop: 7 }}>Browse the operational calendar, appointments, customers, services, and treatment history to see the populated experience. Payments remain empty because the reference site does not publish prices.</Text>
+        <Text style={{ color: colors.muted, marginTop: 7 }}>To refresh older sample services, remove this showcase data after applying the latest migrations, then load it again.</Text>
         <ActionButton label="Remove all showcase data" onPress={() => confirm("clear")} variant="secondary" busy={busy} />
       </Card>
     ) : run.data?.record?.seed_status === "PREPARING" ? (

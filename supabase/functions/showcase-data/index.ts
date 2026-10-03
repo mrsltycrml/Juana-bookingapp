@@ -153,7 +153,7 @@ Deno.serve(async (request) => {
 
       return jsonResponse({
         runId: showcaseRunId,
-        message: "Showcase services, schedules, appointments, treatment history, and clearly marked unpaid payment placeholders are ready. No payments were taken or verified.",
+        message: "The clinic's listed services, sample schedules and appointments, and demo treatment history are ready. Prices are unconfirmed; no payment records were created.",
       }, 201);
     } catch (error) {
       const cleanupErrors = await removeShowcaseUsers(admin, runId);

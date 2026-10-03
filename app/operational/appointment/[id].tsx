@@ -6,7 +6,7 @@ import { ActionButton, Card, ErrorText, Heading, Screen, colors } from "@/compon
 import { getAppointments } from "@/features/appointments/api";
 import { useAuth } from "@/hooks/use-auth";
 import { supabase } from "@/lib/supabase";
-import { formatDateTime, formatMoney } from "@/utils/format";
+import { formatDateTime, formatServiceDuration, formatServicePrice } from "@/utils/format";
 import { firstRelation } from "@/utils/relations";
 import type { Appointment } from "@/types/database";
 
@@ -71,8 +71,8 @@ export default function OperationalAppointmentDetail() {
       <Text style={{ color: colors.muted, marginTop: 4 }}>{appointment.customer?.mobile_number ?? ""}</Text>
       <Text style={{ color: colors.ink, marginTop: 12, fontWeight: "700" }}>Practitioner</Text>
       <Text style={{ color: colors.muted, marginTop: 4 }}>{appointment.practitioner?.display_name}</Text>
-      {appointment.service ? <Text style={{ color: colors.ink, marginTop: 12 }}>{formatMoney(appointment.service.price_amount, appointment.service.currency)} · {appointment.service.duration_minutes} min</Text> : null}
-      <Text style={{ color: colors.muted, marginTop: 5 }}>Payment: {appointment.payments?.[0]?.status ?? "PENDING"} {appointment.payments?.[0]?.provider === "MANUAL" ? "(manual)" : ""}</Text>
+      {appointment.service ? <Text style={{ color: colors.ink, marginTop: 12 }}>{formatServicePrice(appointment.service.price_amount, appointment.service.currency)} · {formatServiceDuration(appointment.service.duration_minutes, !!appointment.showcase_run_id)}</Text> : null}
+      <Text style={{ color: colors.muted, marginTop: 5 }}>{appointment.showcase_run_id ? "DEMO ONLY · NO PAYMENT RECORD" : `Payment: ${appointment.payments?.[0]?.status ?? "PENDING"} ${appointment.payments?.[0]?.provider === "MANUAL" ? "(manual)" : ""}`}</Text>
     </Card>
     {consent.isError ? <ErrorText>Consent could not be loaded. {consent.error.message}</ErrorText> : null}
     {consent.data?.map((submission) => <Card key={submission.id}>
@@ -81,10 +81,10 @@ export default function OperationalAppointmentDetail() {
       {submission.signature ? <Text style={{ color: colors.muted, marginTop: 5 }}>Digital signature: {submission.signature}</Text> : null}
     </Card>)}
     {error ? <ErrorText>{error}</ErrorText> : null}
-    {appointment.status === "BOOKED" && profile?.role !== "PRACTITIONER" ? <ActionButton label="Check in customer" onPress={() => void updateStatus("CHECKED_IN")} busy={busy} /> : null}
-    {appointment.status === "CHECKED_IN" && completeTreatment ? <ActionButton label="Record treatment & complete" onPress={() => router.push({ pathname: "/operational/treatment/new", params: { appointmentId: id } })} /> : null}
-    {appointment.status === "BOOKED" && profile?.role !== "PRACTITIONER" ? <Text onPress={() => router.push({ pathname: "/operational/reschedule", params: { appointmentId: id } })} style={{ color: colors.rose, textAlign: "center", padding: 16 }}>Reschedule appointment</Text> : null}
-    {appointment.status === "BOOKED" && profile?.role !== "PRACTITIONER" ? <Text onPress={() => void updateStatus("NO_SHOW")} style={{ color: colors.muted, textAlign: "center", padding: 13 }}>Mark no-show</Text> : null}
-    {["BOOKED", "TEMPORARILY_RESERVED"].includes(appointment.status) && profile?.role !== "PRACTITIONER" ? <Text onPress={cancel} style={{ color: colors.muted, textAlign: "center", padding: 13 }}>Cancel appointment</Text> : null}
+    {!appointment.showcase_run_id && appointment.status === "BOOKED" && profile?.role !== "PRACTITIONER" ? <ActionButton label="Check in customer" onPress={() => void updateStatus("CHECKED_IN")} busy={busy} /> : null}
+    {!appointment.showcase_run_id && appointment.status === "CHECKED_IN" && completeTreatment ? <ActionButton label="Record treatment & complete" onPress={() => router.push({ pathname: "/operational/treatment/new", params: { appointmentId: id } })} /> : null}
+    {!appointment.showcase_run_id && appointment.status === "BOOKED" && profile?.role !== "PRACTITIONER" ? <Text onPress={() => router.push({ pathname: "/operational/reschedule", params: { appointmentId: id } })} style={{ color: colors.rose, textAlign: "center", padding: 16 }}>Reschedule appointment</Text> : null}
+    {!appointment.showcase_run_id && appointment.status === "BOOKED" && profile?.role !== "PRACTITIONER" ? <Text onPress={() => void updateStatus("NO_SHOW")} style={{ color: colors.muted, textAlign: "center", padding: 13 }}>Mark no-show</Text> : null}
+    {!appointment.showcase_run_id && ["BOOKED", "TEMPORARILY_RESERVED"].includes(appointment.status) && profile?.role !== "PRACTITIONER" ? <Text onPress={cancel} style={{ color: colors.muted, textAlign: "center", padding: 13 }}>Cancel appointment</Text> : null}
   </Screen>;
 }
