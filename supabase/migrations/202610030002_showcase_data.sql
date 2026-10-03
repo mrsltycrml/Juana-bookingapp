@@ -80,7 +80,7 @@ begin
     raise exception using errcode = '42501', message = 'Only signed-in clients can reserve appointments.';
   end if;
   select * into v_service from public.services where id = p_service_id and is_active = true;
-  if not found or not exists (
+  if not found or v_service.showcase_run_id is not null or not exists (
     select 1 from public.practitioner_services ps
     join public.practitioners pr on pr.id = ps.practitioner_id and pr.is_active = true
     where ps.service_id = p_service_id and ps.practitioner_id = p_practitioner_id
@@ -130,6 +130,9 @@ begin
   end if;
   select * into v_service from public.services where id = p_service_id and is_active = true;
   if not found then raise exception using errcode = '22023', message = 'The selected service is not active.'; end if;
+  if v_service.showcase_run_id is not null then
+    raise exception using errcode = '22023', message = 'Showcase services are for browsing only and cannot be booked.';
+  end if;
   if not exists (select 1 from public.profiles p where p.id = p_customer_id and p.role = 'CLIENT' and p.is_active) then
     raise exception using errcode = '22023', message = 'The selected customer account is unavailable.'; end if;
   if not exists (
@@ -367,7 +370,7 @@ begin
       where id = v_service_ids[v_index] and showcase_run_id = v_run_id;
     v_customer_id := p_customer_profile_ids[v_index];
     v_start := case when v_index = 1
-      then (v_today + time '10:00') at time zone 'Asia/Manila'
+      then ((v_today - 2) + time '10:00') at time zone 'Asia/Manila'
       when v_index in (2, 3)
       then ((v_today + 1) + case when v_index = 2 then time '11:00' else time '15:00' end) at time zone 'Asia/Manila'
       else ((v_today + 2) + time '11:00') at time zone 'Asia/Manila'
@@ -424,6 +427,31 @@ begin
   return v_run_id;
 end;
 $$;
+
+create or replace function public.guard_showcase_payments()
+returns trigger
+language plpgsql security definer
+set search_path = ''
+as $$
+begin
+  if exists (
+    select 1 from public.appointments a
+    where a.id = new.appointment_id and a.showcase_run_id is not null
+  ) and (
+    new.provider <> 'MANUAL'
+    or new.status <> 'PENDING'
+    or new.paid_at is not null
+  ) then
+    raise exception using errcode = '42501',
+      message = 'Showcase sample appointments cannot accept or record payments.';
+  end if;
+  return new;
+end;
+$$;
+
+create trigger showcase_payment_guard
+  before insert or update on public.payments
+  for each row execute procedure public.guard_showcase_payments();
 
 create or replace function public.clear_showcase_data(p_run_id uuid)
 returns void

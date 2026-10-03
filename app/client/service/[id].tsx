@@ -39,6 +39,8 @@ export default function ServiceDetails() {
       {person.bio ? <Text style={{ color: colors.muted, marginTop: 5 }}>{person.bio}</Text> : null}
     </Card>)}
     {practitioners.data?.length === 0 ? <Text style={{ color: colors.muted, marginBottom: 15 }}>No active practitioners are listed for this service.</Text> : null}
-    <ActionButton label="Book this service" onPress={() => router.push({ pathname: "/client/book", params: { serviceId: item.id } })} />
+    {item.showcase_run_id
+      ? <Card><Text style={{ color: colors.muted }}>Showcase services are for browsing only. Booking and payment are disabled for sample data.</Text></Card>
+      : <ActionButton label="Book this service" onPress={() => router.push({ pathname: "/client/book", params: { serviceId: item.id } })} />}
   </Screen>;
 }

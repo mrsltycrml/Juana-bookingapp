@@ -55,7 +55,9 @@ export default function ClientHome() {
       <Text style={{ color: colors.ink, fontSize: 17, fontWeight: "700", marginTop: 4 }}>{service.name}</Text>
       <Text numberOfLines={2} style={{ color: colors.muted, marginTop: 5 }}>{service.description}</Text>
       <Text style={{ color: colors.ink, marginTop: 10 }}>{formatMoney(service.price_amount, service.currency)}  ·  {service.duration_minutes} min</Text>
-      <Text onPress={() => router.push({ pathname: "/client/book", params: { serviceId: service.id } })} style={{ color: colors.rose, fontWeight: "700", marginTop: 12 }}>Choose this service →</Text>
+      {service.showcase_run_id
+        ? <Text style={{ color: colors.muted, fontWeight: "600", marginTop: 12 }}>Showcase sample · booking disabled</Text>
+        : <Text onPress={() => router.push({ pathname: "/client/book", params: { serviceId: service.id } })} style={{ color: colors.rose, fontWeight: "700", marginTop: 12 }}>Choose this service →</Text>}
     </Card>)}
     {services.data?.length === 0 ? <Text style={{ color: colors.muted }}>Services are being added by the studio. Please check back soon.</Text> : null}
     {services.isLoading || appointments.isLoading ? <Text style={{ color: colors.muted, marginTop: 12 }}>Loading your Juana experience…</Text> : null}

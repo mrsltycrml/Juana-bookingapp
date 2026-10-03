@@ -88,6 +88,8 @@ Only configure the keys for the selected provider. Configure gateway credentials
 
 If you applied the initial schema by pasting it into the Supabase SQL Editor rather than using `supabase db push`, do not re-run the already-applied initial migration. Apply only `supabase/migrations/202610030002_showcase_data.sql` in the SQL Editor, or first repair the CLI migration history using the Supabase CLI.
 
+The app can read existing services and appointments before the showcase migration is applied. To load showcase records, however, apply the showcase migration and deploy its Edge Function; the admin showcase screen reports when this setup is missing. If Metro serves an old bundle, stop Expo and restart with `npx expo start --clear`.
+
 ### First administrator
 
 Public sign-up can only create `CLIENT` accounts. Sign up and verify the intended first administrator normally, then promote only that account from the Supabase SQL Editor. The profile role-protection trigger intentionally blocks role changes from the app, so perform the one-time bootstrap from the trusted SQL Editor in a single transaction:

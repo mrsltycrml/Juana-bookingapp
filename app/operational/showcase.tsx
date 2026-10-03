@@ -18,8 +18,11 @@ export default function ShowcaseDataScreen() {
     queryFn: async () => {
       const { data, error } = await supabase.from("showcase_runs")
         .select("id,created_at,seed_status").order("created_at", { ascending: false }).limit(1);
+      if (error && ["42P01", "42703", "PGRST204", "PGRST205"].includes(error.code)) {
+        return { record: null, migrationMissing: true };
+      }
       if (error) throw error;
-      return data?.[0] ?? null;
+      return { record: data?.[0] ?? null, migrationMissing: false };
     },
   });
 
@@ -70,6 +73,17 @@ export default function ShowcaseDataScreen() {
     return <Screen><Heading title="Showcase data" subtitle="This tool is available to administrators only." /></Screen>;
   }
 
+  if (run.data?.migrationMissing) {
+    return <Screen>
+      <Heading title="Showcase setup needed" subtitle="Apply the showcase database migration before loading demo data." />
+      <Card style={{ backgroundColor: colors.blush, borderColor: colors.rose }}>
+        <Text style={{ color: colors.ink, lineHeight: 22 }}>
+          Supabase is missing the showcase schema. In your Supabase SQL Editor, run the contents of `supabase/migrations/202610030002_showcase_data.sql` from the updated GitHub repository, then reopen this screen. Do not rerun the initial schema migration.
+        </Text>
+      </Card>
+    </Screen>;
+  }
+
   return <Screen>
     <Heading title="Showcase demo" subtitle="Populate the app for stakeholder presentations, then remove the sample data before going live." />
     <Card style={{ backgroundColor: colors.blush, borderColor: colors.rose }}>
@@ -81,14 +95,14 @@ export default function ShowcaseDataScreen() {
     {errorMessage ? <ErrorText>{errorMessage}</ErrorText> : null}
     {successMessage ? <Card><Text style={{ color: colors.ink }}>{successMessage}</Text></Card> : null}
     {run.isError ? <ErrorText>Showcase status could not be loaded. {run.error.message}</ErrorText> : null}
-    {run.data?.seed_status === "ACTIVE" ? (
+    {run.data?.record?.seed_status === "ACTIVE" ? (
       <Card>
         <Text style={{ color: colors.ink, fontWeight: "700", fontSize: 17 }}>Sample data is loaded</Text>
-        <Text style={{ color: colors.muted, marginTop: 7 }}>Created {new Date(run.data.created_at).toLocaleString()}</Text>
+        <Text style={{ color: colors.muted, marginTop: 7 }}>Created {new Date(run.data.record.created_at).toLocaleString()}</Text>
         <Text style={{ color: colors.muted, marginTop: 7 }}>Browse the operational calendar, appointments, customers, payments, services, and treatment history to see the populated experience.</Text>
         <ActionButton label="Remove all showcase data" onPress={() => confirm("clear")} variant="secondary" busy={busy} />
       </Card>
-    ) : run.data?.seed_status === "PREPARING" ? (
+    ) : run.data?.record?.seed_status === "PREPARING" ? (
       <Card>
         <Text style={{ color: colors.ink, fontWeight: "700", fontSize: 17 }}>Showcase data is being prepared</Text>
         <Text style={{ color: colors.muted, lineHeight: 21, marginVertical: 10 }}>Wait for setup to finish, or refresh the status. You can remove an interrupted setup here.</Text>

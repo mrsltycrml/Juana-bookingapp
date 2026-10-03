@@ -15,7 +15,7 @@ export default function PaymentsScreen() {
     enabled: allowed,
     queryFn: async () => {
       const { data, error } = await supabase.from("payments")
-        .select("id,appointment_id,amount,currency,status,provider,provider_reference,manual_reference,paid_at,created_at,appointment:appointments(id,starts_at,showcase_run_id,customer:profiles(full_name),service:services(name))")
+        .select("id,appointment_id,amount,currency,status,provider,provider_reference,manual_reference,paid_at,created_at,appointment:appointments(*,customer:profiles!appointments_customer_id_fkey(full_name),service:services(name))")
         .order("created_at", { ascending: false }).limit(200);
       if (error) throw error;
       return data;

@@ -33,6 +33,7 @@ export default function OperationalHome() {
     enabled: profile?.role !== "CLIENT",
     queryFn: async () => {
       const { data, error } = await supabase.from("showcase_runs").select("seed_status").limit(1);
+      if (error && ["42P01", "42703", "PGRST204", "PGRST205"].includes(error.code)) return false;
       if (error) throw error;
       return data?.some((run) => run.seed_status === "ACTIVE") ?? false;
     },

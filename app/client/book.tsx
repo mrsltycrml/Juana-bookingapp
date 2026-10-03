@@ -238,13 +238,16 @@ export default function BookScreen() {
       {slots.data?.length === 0 && !slots.isLoading ? <Text style={{ color: colors.muted }}>No times are available on this day. Choose another date.</Text> : null}
     </> : null}
     {error ? <ErrorText>{error}</ErrorText> : null}
+    {service?.showcase_run_id ? <Card style={{ backgroundColor: colors.blush }}>
+      <Text style={{ color: colors.ink }}>Showcase sample service. Booking and payment are disabled; sample data cannot create a real charge.</Text>
+    </Card> : null}
     {selectedSlot ? <View style={{ marginTop: 18 }}>
       <Card><Text style={{ color: colors.ink, fontWeight: "700" }}>Your selection</Text>
         {service?.showcase_run_id ? <Text style={{ color: colors.rose, fontWeight: "800", marginTop: 6 }}>SHOWCASE SAMPLE · SAMPLE PRICE ONLY</Text> : null}
         <Text style={{ color: colors.muted, marginTop: 6 }}>{service?.name} · {shortDate(new Date(`${date}T12:00:00`))} · {formatTime(selectedSlot.starts_at)}</Text>
         <Text style={{ color: colors.ink, marginTop: 6 }}>Full payment: {service ? formatMoney(service.price_amount, service.currency) : ""}</Text>
       </Card>
-      <ActionButton label="Reserve & continue" onPress={() => void startReservation()} busy={busy} />
+      <ActionButton label={service?.showcase_run_id ? "Sample booking unavailable" : "Reserve & continue"} onPress={() => void startReservation()} busy={busy} disabled={!!service?.showcase_run_id} />
     </View> : null}
   </Screen>;
 }

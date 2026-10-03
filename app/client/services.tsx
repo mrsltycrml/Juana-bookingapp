@@ -24,7 +24,9 @@ export default function ServicesScreen() {
       <Pressable onPress={() => router.push({ pathname: "/client/service/[id]", params: { id: service.id } })} hitSlop={8}>
         <Text style={{ color: colors.rose, fontWeight: "700", marginTop: 15 }}>View details →</Text>
       </Pressable>
-      <Text onPress={() => router.push({ pathname: "/client/book", params: { serviceId: service.id } })} style={{ color: colors.muted, fontWeight: "600", marginTop: 12 }}>Book this treatment</Text>
+      {service.showcase_run_id
+        ? <Text style={{ color: colors.muted, fontWeight: "600", marginTop: 12 }}>Sample only · booking is disabled</Text>
+        : <Text onPress={() => router.push({ pathname: "/client/book", params: { serviceId: service.id } })} style={{ color: colors.muted, fontWeight: "600", marginTop: 12 }}>Book this treatment</Text>}
     </Card>)}
     {query.data?.length === 0 ? <Text style={{ color: colors.muted }}>There are no active services available right now.</Text> : null}
   </Screen>;
