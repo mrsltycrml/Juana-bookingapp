@@ -9,7 +9,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { supabase } from "@/lib/supabase";
 import { businessDateKey, manilaDate } from "@/utils/dates";
 
-export default function RescheduleScreen() {
+export default function RescheduleScreen({ operational = false }: { operational?: boolean }) {
   const { appointmentId = "" } = useLocalSearchParams<{ appointmentId: string }>();
   const { user } = useAuth();
   const client = useQueryClient();
@@ -18,7 +18,11 @@ export default function RescheduleScreen() {
   const [selected, setSelected] = useState<AvailableSlot | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
-  const appointments = useQuery({ queryKey: ["appointments", user?.id], queryFn: () => getAppointments(user?.id), enabled: !!user });
+  const appointments = useQuery({
+    queryKey: operational ? ["operational-appointments"] : ["appointments", user?.id],
+    queryFn: () => getAppointments(operational ? undefined : user?.id),
+    enabled: operational || !!user,
+  });
   const appointment = appointments.data?.find((item) => item.id === appointmentId);
   const slots = useQuery({
     queryKey: ["reschedule-slots", appointment?.service_id, date],
@@ -52,7 +56,9 @@ export default function RescheduleScreen() {
             if (actionError) throw actionError;
           await client.invalidateQueries({ queryKey: ["appointments"] });
           await client.invalidateQueries({ queryKey: ["operational-appointments"] });
-          router.replace("/client/appointments");
+          router.replace(operational
+            ? { pathname: "/operational/appointment/[id]", params: { id: appointmentId } }
+            : "/client/appointments");
           } catch (cause) {
             setError(cause instanceof Error ? cause.message : "Appointment could not be rescheduled.");
           } finally { setBusy(false); }

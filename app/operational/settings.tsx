@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { startTransition, useEffect, useState } from "react";
 import { Text, View } from "react-native";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { ActionButton, ErrorText, Field, Heading, Screen, colors } from "@/components/ui";
@@ -34,14 +34,16 @@ export default function SettingsScreen() {
   useEffect(() => {
     if (!settings.data) return;
     const values = Object.fromEntries(settings.data.map(({ key, value }) => [key, value])) as Record<string, unknown>;
-    const hoursValue = values.business_hours as BusinessHours | undefined;
-    if (hoursValue) setHours(hoursValue);
-    setCancellation(String((values.cancellation_policy as { minimum_hours_before?: number } | undefined)?.minimum_hours_before ?? ""));
-    setRescheduling(String((values.rescheduling_policy as { minimum_hours_before?: number } | undefined)?.minimum_hours_before ?? ""));
-    setReminder(String((values.reminder_settings as { hours_before?: number } | undefined)?.hours_before ?? ""));
-    const booking = values.booking_settings as { maximum_days_ahead?: number; slot_interval_minutes?: number } | undefined;
-    setMaxDays(String(booking?.maximum_days_ahead ?? ""));
-    setSlotInterval(String(booking?.slot_interval_minutes ?? ""));
+    startTransition(() => {
+      const hoursValue = values.business_hours as BusinessHours | undefined;
+      if (hoursValue) setHours(hoursValue);
+      setCancellation(String((values.cancellation_policy as { minimum_hours_before?: number } | undefined)?.minimum_hours_before ?? ""));
+      setRescheduling(String((values.rescheduling_policy as { minimum_hours_before?: number } | undefined)?.minimum_hours_before ?? ""));
+      setReminder(String((values.reminder_settings as { hours_before?: number } | undefined)?.hours_before ?? ""));
+      const booking = values.booking_settings as { maximum_days_ahead?: number; slot_interval_minutes?: number } | undefined;
+      setMaxDays(String(booking?.maximum_days_ahead ?? ""));
+      setSlotInterval(String(booking?.slot_interval_minutes ?? ""));
+    });
   }, [settings.data]);
   if (!isAdmin) return <Screen><Heading title="Studio settings" subtitle="Settings are available to administrators only." /></Screen>;
   const changeDay = (day: number, field: keyof BusinessDay, value: string | boolean) => {

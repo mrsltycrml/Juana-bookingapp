@@ -17,7 +17,7 @@ The project intentionally does not implement attendance, time clocks, payroll, H
 
 ## Requirements
 
-- Node.js compatible with Expo SDK 54 (Node 20 LTS recommended) and npm.
+- Node.js compatible with Expo SDK 57 (Node 20 LTS recommended) and npm.
 - Expo Go for supported development-device testing, or Android Studio / Xcode for native builds.
 - A Supabase project for authentication, database, RLS, Storage, Realtime, and Edge Functions.
 - Docker and the Supabase CLI for local Supabase database/Edge Function integration testing.
@@ -147,7 +147,7 @@ $env:EXPO_PUBLIC_SUPABASE_ANON_KEY = "example-anon-key"
 npx expo export --platform android
 ```
 
-The placeholder environment values above only allow a compile/bundle; they do not connect to a functioning backend. At the time of this implementation, `npm audit` reports 19 advisories (6 high, 13 moderate) in the pinned Expo SDK 54 dependency graph. The non-breaking `npm audit fix` was applied, but the remaining advisories require coordinated toolchain upgrades; review and resolve them before production rather than applying a breaking forced downgrade.
+The placeholder environment values above only allow a compile/bundle; they do not connect to a functioning backend. `npm audit` currently reports advisories in the Expo SDK 57 / NativeWind development dependency tree. The registry recommends breaking major-version changes for several advisories; review the full report and resolve them with compatible upgrades before production rather than applying a forced downgrade.
 
 For backend integration testing, start a disposable local Supabase stack with Docker, apply migrations, then exercise Auth/RLS, concurrent reservations, consent/versioning, payment callback verification, and staff role boundaries using test accounts and provider sandbox credentials. This repository does not contain a live-project integration test suite or provider credentials. Do not test payment or privileged RLS behavior against production customer data.
 
@@ -168,7 +168,7 @@ types/                   Shared application types
 
 - Apply the migration and configure every required Auth redirect, Edge Function secret, payment-provider webhook, cron schedule, and EAS push credential before a production rollout.
 - There is no live Supabase project in this repository configuration; RLS, PostgreSQL migration execution, Edge Functions, provider webhooks, and concurrent booking have not been integration-tested against a Supabase instance here.
-- The Expo SDK 54 dependency audit still reports 19 advisories (6 high, 13 moderate) after safe non-breaking updates; assess a compatible Expo/toolchain upgrade before production.
+- The Expo SDK 57 / NativeWind dependency audit still reports advisories, many with only breaking-version remediation suggested; resolve them before a production release.
 - Online checkout cannot work until one gateway is configured. No test payment is fabricated by the client.
 - Manual payments are recorded as `MANUAL`, not as a gateway payment. Refunds of paid cancellations require studio-side provider follow-up; automated refunds are not implemented.
 - Before launch, have the studio enter verified services/prices/practitioners/schedules, consent wording, operating hours, and cancellation/rescheduling policy. Review consent, privacy, and payment behavior with appropriate business/legal professionals.

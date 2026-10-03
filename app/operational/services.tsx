@@ -31,6 +31,7 @@ export default function ServicesManagement() {
   const [editorOpen, setEditorOpen] = useState(false);
   const [imageUri, setImageUri] = useState("");
   const [imageMime, setImageMime] = useState("image/jpeg");
+  const [imageVersion, setImageVersion] = useState("");
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
   const isAdmin = profile?.role === "ADMIN";
@@ -50,7 +51,7 @@ export default function ServicesManagement() {
   });
   const startEdit = (item: Service) => {
     setEditorOpen(true);
-    setEditing(item); setImageUri(""); setImageMime("image/jpeg");
+    setEditing(item); setImageUri(""); setImageMime("image/jpeg"); setImageVersion("");
     reset({
       name: item.name, description: item.description, category: item.category,
       price: item.price_amount, duration: item.duration_minutes, currency: item.currency,
@@ -59,7 +60,7 @@ export default function ServicesManagement() {
   };
   const createNew = () => {
     setEditorOpen(true);
-    setEditing(null); setImageUri(""); setImageMime("image/jpeg");
+    setEditing(null); setImageUri(""); setImageMime("image/jpeg"); setImageVersion("");
     reset({ name: "", description: "", category: "", price: 0, duration: 30, currency: "PHP", requiresConsent: false });
   };
   const selectImage = async () => {
@@ -69,6 +70,7 @@ export default function ServicesManagement() {
     if (!result.canceled) {
       setImageUri(result.assets[0].uri);
       setImageMime(result.assets[0].mimeType ?? "image/jpeg");
+      setImageVersion(String(Date.now()));
     }
   };
   const save = async (values: ServiceValues) => {
@@ -93,7 +95,7 @@ export default function ServicesManagement() {
         const response = await fetch(imageUri);
         const image = await response.blob();
         const extension = imageMime === "image/png" ? "png" : imageMime === "image/webp" ? "webp" : "jpg";
-        const path = `services/${serviceId}/${Date.now()}.${extension}`;
+        const path = `services/${serviceId}/${imageVersion}.${extension}`;
         const { error: uploadError } = await supabase.storage.from("service-images")
           .upload(path, image, { contentType: imageMime });
         if (uploadError) throw uploadError;

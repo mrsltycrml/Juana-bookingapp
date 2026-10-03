@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { router } from "expo-router";
 import { Alert, Text } from "react-native";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -12,8 +12,16 @@ export default function AppointmentsScreen() {
   const { user } = useAuth();
   const client = useQueryClient();
   const [busyId, setBusyId] = useState("");
+  const [now, setNow] = useState(0);
   const query = useQuery({ queryKey: ["appointments", user?.id], queryFn: () => getAppointments(user?.id), enabled: !!user });
-  const now = Date.now();
+  useEffect(() => {
+    const initialUpdate = setTimeout(() => setNow(Date.now()), 0);
+    const interval = setInterval(() => setNow(Date.now()), 60_000);
+    return () => {
+      clearTimeout(initialUpdate);
+      clearInterval(interval);
+    };
+  }, []);
   const upcoming = query.data?.filter((item) => new Date(item.starts_at).getTime() >= now && !["CANCELLED", "RESCHEDULED"].includes(item.status)) ?? [];
   const past = query.data?.filter((item) => new Date(item.starts_at).getTime() < now || ["CANCELLED", "RESCHEDULED"].includes(item.status)) ?? [];
   const cancel = (appointment: Appointment) => Alert.alert("Cancel appointment?", "Cancellation is subject to the studio’s policy.", [
