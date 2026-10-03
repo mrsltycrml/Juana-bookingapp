@@ -37,6 +37,7 @@ export default function OperationalLayout() {
     <Tabs.Screen name="payments" options={{ href: null }} />
     <Tabs.Screen name="settings" options={{ href: null }} />
     <Tabs.Screen name="team" options={{ href: null }} />
+    <Tabs.Screen name="showcase" options={{ href: null }} />
     <Tabs.Screen name="appointment/[id]" options={{ href: null }} />
     <Tabs.Screen name="customer/[id]" options={{ href: null }} />
     <Tabs.Screen name="treatment/new" options={{ href: null }} />

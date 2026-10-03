@@ -10,7 +10,7 @@ export interface AvailableSlot {
 
 export async function getAppointments(customerId?: string): Promise<Appointment[]> {
   let query = supabase.from("appointments")
-    .select("*, service:services(id,name,category,price_amount,currency,duration_minutes), practitioner:practitioners(id,display_name), payments(id,status,amount,currency,provider)")
+    .select("*, service:services(id,name,category,price_amount,currency,duration_minutes,showcase_run_id), practitioner:practitioners(id,display_name,showcase_run_id), customer:profiles!appointments_customer_id_fkey(id,full_name,email,mobile_number), payments(id,status,amount,currency,provider)")
     .order("starts_at", { ascending: true });
   if (customerId) query = query.eq("customer_id", customerId);
   const { data, error } = await query;

@@ -19,6 +19,10 @@ export default function ServiceDetails() {
   if (!service.data) return <Screen><Heading title="Service unavailable" subtitle="This service is no longer available." /></Screen>;
   const item = service.data;
   return <Screen>
+    {item.showcase_run_id ? <Card style={{ backgroundColor: colors.blush, borderColor: colors.rose }}>
+      <Text style={{ color: colors.rose, fontWeight: "800", letterSpacing: 1 }}>SHOWCASE SAMPLE</Text>
+      <Text style={{ color: colors.ink, marginTop: 6 }}>Sample service details and pricing only. Confirm real services and prices with the studio.</Text>
+    </Card> : null}
     {item.image_path ? <Image source={{ uri: supabase.storage.from("service-images").getPublicUrl(item.image_path).data.publicUrl }} style={{ height: 225, borderRadius: 22, marginBottom: 22 }} /> : null}
     <Text style={{ color: colors.rose, fontWeight: "700", textTransform: "uppercase", fontSize: 12 }}>{item.category}</Text>
     <Heading title={item.name} />

@@ -38,6 +38,7 @@ export interface Service {
   duration_minutes: number;
   requires_consent: boolean;
   is_active: boolean;
+  showcase_run_id?: string | null;
 }
 
 export interface Practitioner {
@@ -46,6 +47,7 @@ export interface Practitioner {
   display_name: string;
   bio: string | null;
   is_active: boolean;
+  showcase_run_id?: string | null;
 }
 
 export interface Appointment {
@@ -58,6 +60,7 @@ export interface Appointment {
   status: AppointmentStatus;
   reservation_expires_at: string | null;
   service_snapshot: Record<string, unknown>;
+  showcase_run_id?: string | null;
   practitioner?: Practitioner | null;
   service?: Service | null;
   customer?: Profile | null;

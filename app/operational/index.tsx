@@ -28,6 +28,15 @@ export default function OperationalHome() {
       return data;
     },
   });
+  const showcase = useQuery({
+    queryKey: ["showcase-run"],
+    enabled: profile?.role !== "CLIENT",
+    queryFn: async () => {
+      const { data, error } = await supabase.from("showcase_runs").select("seed_status").limit(1);
+      if (error) throw error;
+      return data?.some((run) => run.seed_status === "ACTIVE") ?? false;
+    },
+  });
   const items = appointments.data ?? [];
   const today = businessDateKey(new Date());
   const todays = items.filter((appointment) => businessDateKey(appointment.starts_at) === today);
@@ -39,10 +48,14 @@ export default function OperationalHome() {
   }, new Map<string, number>()).entries()];
   const paymentIssues = payments.data?.filter((payment) => ["PENDING", "FAILED", "EXPIRED"].includes(payment.status)).length ?? 0;
   const count = (status: string) => todays.filter((appointment) => appointment.status === status).length;
-  const errorMessage = appointments.error?.message ?? payments.error?.message ?? customers.error?.message;
+  const errorMessage = appointments.error?.message ?? payments.error?.message ?? customers.error?.message ?? showcase.error?.message;
   return <Screen>
     <Text style={{ color: colors.rose, letterSpacing: 2, fontSize: 11, fontWeight: "700", marginBottom: 12 }}>JUANA · STUDIO</Text>
     <Heading title={`Hello, ${profile?.full_name.split(" ")[0] ?? "team"}`} subtitle="Here’s what’s happening at the studio." />
+    {showcase.data ? <Card style={{ backgroundColor: colors.blush, borderColor: colors.rose }}>
+      <Text style={{ color: colors.rose, fontWeight: "800", letterSpacing: 1 }}>DEMO DATA ACTIVE</Text>
+      <Text style={{ color: colors.ink, lineHeight: 21, marginTop: 6 }}>Appointments, revenue, payments, services, and customer records on this dashboard include clearly marked sample data. Remove it from More → Showcase demo data before going live.</Text>
+    </Card> : null}
     {errorMessage ? <ErrorText>Dashboard data could not be loaded. {errorMessage}</ErrorText> : null}
     <View style={{ flexDirection: "row", flexWrap: "wrap", justifyContent: "space-between" }}>
       {[

@@ -15,7 +15,7 @@ export default function PaymentsScreen() {
     enabled: allowed,
     queryFn: async () => {
       const { data, error } = await supabase.from("payments")
-        .select("id,appointment_id,amount,currency,status,provider,provider_reference,manual_reference,paid_at,created_at,appointment:appointments(id,starts_at,customer:profiles(full_name),service:services(name))")
+        .select("id,appointment_id,amount,currency,status,provider,provider_reference,manual_reference,paid_at,created_at,appointment:appointments(id,starts_at,showcase_run_id,customer:profiles(full_name),service:services(name))")
         .order("created_at", { ascending: false }).limit(200);
       if (error) throw error;
       return data;
@@ -26,7 +26,7 @@ export default function PaymentsScreen() {
     <Heading title="Payments" subtitle="Gateway-verified payments and clearly labeled manual payments." />
     {query.isError ? <ErrorText>Payments could not be loaded. {query.error.message}</ErrorText> : null}
     {query.data?.map((payment) => <Card key={payment.id}>
-      <Text style={{ color: payment.status === "PAID" ? colors.rose : colors.muted, fontWeight: "700" }}>{payment.status} · {payment.provider === "MANUAL" ? "MANUAL PAYMENT" : payment.provider}</Text>
+      <Text style={{ color: payment.status === "PAID" ? colors.rose : colors.muted, fontWeight: "700" }}>{firstRelation(payment.appointment)?.showcase_run_id || payment.manual_reference?.startsWith("DEMO ONLY") ? "DEMO SAMPLE · NOT A REAL PAYMENT" : `${payment.status} · ${payment.provider === "MANUAL" ? "MANUAL PAYMENT" : payment.provider}`}</Text>
       <Text style={{ color: colors.ink, fontWeight: "700", fontSize: 17, marginTop: 6 }}>{formatMoney(Number(payment.amount), payment.currency)}</Text>
       <Text style={{ color: colors.muted, marginTop: 5 }}>{firstRelation(firstRelation(payment.appointment)?.customer)?.full_name ?? "Customer"} · {firstRelation(firstRelation(payment.appointment)?.service)?.name ?? "Service"}</Text>
       <Text style={{ color: colors.muted, marginTop: 4 }}>{firstRelation(payment.appointment)?.starts_at ? formatDateTime(firstRelation(payment.appointment)!.starts_at) : "Appointment unavailable"}</Text>

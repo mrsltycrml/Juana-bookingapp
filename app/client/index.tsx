@@ -27,13 +27,18 @@ export default function ClientHome() {
       <Text onPress={() => void openNotifications()} style={{ fontSize: 22, padding: 10, color: colors.rose }}>♧</Text>
     </View>
     <Heading title="Care, at your pace." subtitle="Discover thoughtful treatments, booked around you." />
+    {services.data?.some((service) => service.showcase_run_id) ? <Card style={{ backgroundColor: colors.blush, borderColor: colors.rose }}>
+      <Text style={{ color: colors.rose, fontWeight: "800", letterSpacing: 1 }}>STAKEHOLDER SHOWCASE</Text>
+      <Text style={{ color: colors.ink, lineHeight: 21, marginTop: 6 }}>This catalog contains sample services and sample prices only. It does not represent confirmed Juana offerings or pricing.</Text>
+    </Card> : null}
     {appointments.isError ? <ErrorText>We couldn’t load your appointments: {appointments.error.message}</ErrorText> : null}
     {upcoming ? <Card style={{ backgroundColor: colors.blush, borderColor: colors.blush }}>
+      {upcoming.showcase_run_id ? <Text style={{ color: colors.rose, fontWeight: "800", letterSpacing: 1, fontSize: 11 }}>SHOWCASE SAMPLE · NOT A REAL BOOKING</Text> : null}
       <Text style={{ color: colors.rose, fontWeight: "700", fontSize: 12, letterSpacing: 1 }}>UP NEXT</Text>
       <Text style={{ color: colors.ink, fontWeight: "700", fontSize: 19, marginTop: 10 }}>{upcoming.service?.name ?? "Appointment"}</Text>
       <Text style={{ color: colors.muted, marginTop: 7 }}>{formatDateTime(upcoming.starts_at)}</Text>
       <Text style={{ color: colors.muted, marginTop: 4 }}>With {upcoming.practitioner?.display_name ?? "your practitioner"}</Text>
-      <Text style={{ color: colors.rose, fontWeight: "600", marginTop: 8 }}>Payment: {upcoming.payments?.[0]?.status ?? "PENDING"}</Text>
+      <Text style={{ color: colors.rose, fontWeight: "600", marginTop: 8 }}>{upcoming.showcase_run_id ? "SAMPLE ONLY · NOT PAID" : `Payment: ${upcoming.payments?.[0]?.status ?? "PENDING"}`}</Text>
     </Card> : <Card>
       <Text style={{ fontSize: 18, color: colors.ink, fontWeight: "700" }}>Your next little escape</Text>
       <Text style={{ color: colors.muted, lineHeight: 21, marginTop: 8, marginBottom: 14 }}>No upcoming appointments yet. Find a service that feels right for you.</Text>
@@ -45,6 +50,7 @@ export default function ClientHome() {
     </View>
     {services.isError ? <ErrorText>Services could not be loaded. {services.error.message}</ErrorText> : null}
     {services.data?.slice(0, 3).map((service) => <Card key={service.id}>
+      {service.showcase_run_id ? <Text style={{ color: colors.rose, fontSize: 10, fontWeight: "800", letterSpacing: 1, marginBottom: 5 }}>SAMPLE · NOT A REAL SERVICE</Text> : null}
       <Text style={{ color: colors.rose, fontSize: 12, fontWeight: "700", textTransform: "uppercase" }}>{service.category}</Text>
       <Text style={{ color: colors.ink, fontSize: 17, fontWeight: "700", marginTop: 4 }}>{service.name}</Text>
       <Text numberOfLines={2} style={{ color: colors.muted, marginTop: 5 }}>{service.description}</Text>

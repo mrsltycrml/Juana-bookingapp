@@ -70,9 +70,10 @@ export default function CalendarScreen() {
     {agenda.map((appointment) => <Pressable key={appointment.id} onPress={() => router.push({ pathname: "/operational/appointment/[id]", params: { id: appointment.id } })}>
       <Card>
         <Text style={{ color: colors.rose, fontWeight: "700" }}>{formatDateTime(appointment.starts_at)}</Text>
+        {appointment.showcase_run_id ? <Text style={{ color: colors.rose, fontWeight: "800", fontSize: 11, letterSpacing: 1, marginTop: 5 }}>SHOWCASE SAMPLE</Text> : null}
         <Text style={{ color: colors.ink, fontSize: 17, fontWeight: "700", marginTop: 5 }}>{appointment.customer?.full_name ?? (profile?.role === "PRACTITIONER" ? "Assigned customer" : "Customer")}</Text>
         <Text style={{ color: colors.muted, marginTop: 5 }}>{appointment.service?.name} · {appointment.practitioner?.display_name}</Text>
-        <Text style={{ color: colors.muted, marginTop: 5 }}>{appointment.status.replaceAll("_", " ")} · {appointment.payments?.[0]?.status ?? "PENDING"}</Text>
+        <Text style={{ color: colors.muted, marginTop: 5 }}>{appointment.status.replaceAll("_", " ")} · {appointment.showcase_run_id ? "SAMPLE PAYMENT · UNPAID" : appointment.payments?.[0]?.status ?? "PENDING"}</Text>
       </Card>
     </Pressable>)}
     {agenda.length === 0 && !appointments.isLoading ? <Card><Text style={{ color: colors.muted }}>No appointments in this {mode.toLowerCase()} view.</Text></Card> : null}

@@ -12,6 +12,7 @@ export default function ServicesScreen() {
     {query.isLoading ? <Text style={{ color: colors.muted }}>Loading services…</Text> : null}
     {query.isError ? <ErrorText>Services could not be loaded. {query.error.message}</ErrorText> : null}
     {query.data?.map((service) => <Card key={service.id}>
+      {service.showcase_run_id ? <Text style={{ color: colors.rose, fontWeight: "800", letterSpacing: 1, fontSize: 11, marginBottom: 7 }}>SHOWCASE SAMPLE · NOT A REAL JUANA SERVICE</Text> : null}
       <Text style={{ color: colors.rose, fontWeight: "700", textTransform: "uppercase", fontSize: 12 }}>{service.category}</Text>
       <Text style={{ fontSize: 20, fontWeight: "700", color: colors.ink, marginTop: 5 }}>{service.name}</Text>
       <Text style={{ color: colors.muted, lineHeight: 21, marginTop: 8 }}>{service.description}</Text>

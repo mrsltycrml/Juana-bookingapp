@@ -5,6 +5,7 @@ import { useAuth } from "@/hooks/use-auth";
 import type { Href } from "expo-router";
 
 const adminTools: [string, Href][] = [
+  ["Showcase demo data", "/operational/showcase"],
   ["Services", "/operational/services"],
   ["Practitioners & schedules", "/operational/practitioners"],
   ["Consent forms", "/operational/consent"],

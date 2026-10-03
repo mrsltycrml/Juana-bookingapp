@@ -34,11 +34,12 @@ export default function AppointmentsScreen() {
     } },
   ]);
   const card = (appointment: Appointment) => <Card key={appointment.id}>
+    {appointment.showcase_run_id ? <Text style={{ color: colors.rose, fontWeight: "800", letterSpacing: 1, fontSize: 11 }}>SHOWCASE SAMPLE · NOT A REAL BOOKING</Text> : null}
     <Text style={{ color: colors.rose, fontWeight: "700" }}>{appointment.status.replaceAll("_", " ")}</Text>
     <Text style={{ color: colors.ink, fontSize: 18, fontWeight: "700", marginTop: 5 }}>{appointment.service?.name ?? "Service"}</Text>
     <Text style={{ color: colors.muted, marginTop: 6 }}>{formatDateTime(appointment.starts_at)}</Text>
     <Text style={{ color: colors.muted, marginTop: 4 }}>Practitioner: {appointment.practitioner?.display_name ?? "To be confirmed"}</Text>
-    <Text style={{ color: colors.muted, marginTop: 4 }}>Payment: {appointment.payments?.[0]?.status ?? "PENDING"}</Text>
+    <Text style={{ color: colors.muted, marginTop: 4 }}>{appointment.showcase_run_id ? "SAMPLE ONLY · NOT PAID" : `Payment: ${appointment.payments?.[0]?.status ?? "PENDING"}`}</Text>
     {appointment.service ? <Text style={{ color: colors.ink, marginTop: 8 }}>{formatMoney(appointment.service.price_amount, appointment.service.currency)}</Text> : null}
     {["BOOKED", "TEMPORARILY_RESERVED"].includes(appointment.status) ? <ActionButton label="Cancel" variant="secondary" busy={busyId === appointment.id} onPress={() => cancel(appointment)} /> : null}
     {appointment.status === "BOOKED" ? <Text onPress={() => router.push({ pathname: "/client/reschedule", params: { appointmentId: appointment.id } })} style={{ color: colors.rose, textAlign: "center", padding: 12 }}>Reschedule</Text> : null}

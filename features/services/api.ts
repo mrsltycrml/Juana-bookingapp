@@ -4,7 +4,7 @@ import { firstRelation } from "@/utils/relations";
 
 export async function getActiveServices(): Promise<Service[]> {
   const { data, error } = await supabase.from("services")
-    .select("id, name, description, category, image_path, price_amount, currency, duration_minutes, requires_consent, is_active")
+    .select("id, name, description, category, image_path, price_amount, currency, duration_minutes, requires_consent, is_active, showcase_run_id")
     .eq("is_active", true)
     .order("category")
     .order("name");

@@ -147,6 +147,7 @@ export default function ServicesManagement() {
     {services.isError ? <ErrorText>Services could not be loaded. {services.error.message}</ErrorText> : null}
     {services.data?.map((item) => <Card key={item.id}>
       {item.image_path ? <Image source={{ uri: supabase.storage.from("service-images").getPublicUrl(item.image_path).data.publicUrl }} style={{ width: "100%", height: 145, borderRadius: 14, marginBottom: 12 }} /> : null}
+      {item.showcase_run_id ? <Text style={{ color: colors.rose, fontWeight: "800", letterSpacing: 1, fontSize: 11, marginBottom: 6 }}>DEMO SAMPLE · NOT VERIFIED STUDIO DATA</Text> : null}
       <Text style={{ color: colors.rose, fontWeight: "700" }}>{item.category} · {item.is_active ? "ACTIVE" : "INACTIVE"}</Text>
       <Text style={{ color: colors.ink, fontSize: 18, fontWeight: "700", marginTop: 5 }}>{item.name}</Text>
       <Text style={{ color: colors.muted, marginTop: 5 }}>{formatMoney(item.price_amount, item.currency)} · {item.duration_minutes} minutes</Text>

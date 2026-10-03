@@ -240,6 +240,7 @@ export default function BookScreen() {
     {error ? <ErrorText>{error}</ErrorText> : null}
     {selectedSlot ? <View style={{ marginTop: 18 }}>
       <Card><Text style={{ color: colors.ink, fontWeight: "700" }}>Your selection</Text>
+        {service?.showcase_run_id ? <Text style={{ color: colors.rose, fontWeight: "800", marginTop: 6 }}>SHOWCASE SAMPLE · SAMPLE PRICE ONLY</Text> : null}
         <Text style={{ color: colors.muted, marginTop: 6 }}>{service?.name} · {shortDate(new Date(`${date}T12:00:00`))} · {formatTime(selectedSlot.starts_at)}</Text>
         <Text style={{ color: colors.ink, marginTop: 6 }}>Full payment: {service ? formatMoney(service.price_amount, service.currency) : ""}</Text>
       </Card>
