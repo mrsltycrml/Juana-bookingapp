@@ -88,16 +88,28 @@ Only configure the keys for the selected provider. Configure gateway credentials
 
 ### First administrator
 
-Public sign-up can only create `CLIENT` accounts. Create and verify the initial administrator through a trusted Supabase Auth administrative interface, then promote only that account from the Supabase SQL Editor or another trusted database-admin connection:
+Public sign-up can only create `CLIENT` accounts. Sign up and verify the intended first administrator normally, then promote only that account from the Supabase SQL Editor. The profile role-protection trigger intentionally blocks role changes from the app, so perform the one-time bootstrap from the trusted SQL Editor in a single transaction:
 
 ```sql
+begin;
+
+alter table public.profiles disable trigger profiles_role_guard;
+
 update public.profiles
 set role = 'ADMIN'
-where id = 'AUTH_USER_UUID'
+where lower(email) = lower('YOUR_VERIFIED_SIGNUP_EMAIL')
   and role = 'CLIENT';
+
+alter table public.profiles enable trigger profiles_role_guard;
+
+commit;
+
+select email, role
+from public.profiles
+where lower(email) = lower('YOUR_VERIFIED_SIGNUP_EMAIL');
 ```
 
-Verify the affected user UUID and role before running this privileged statement. Never run it from the mobile client. After bootstrap, admins can invite/manage staff through the authenticated `admin-create-account` Edge Function.
+Replace the email placeholder with the exact email used for the verified signup. Confirm the final query returns `ADMIN`, then sign out of the app and sign back in. This privileged SQL is only for the initial owner bootstrap; never run it from the mobile client. After bootstrap, admins can invite/manage staff through the authenticated `admin-create-account` Edge Function.
 
 ## Edge Functions and payment setup
 
