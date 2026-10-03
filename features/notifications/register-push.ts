@@ -15,7 +15,7 @@ Notifications.setNotificationHandler({
 });
 
 export async function registerPushNotifications(profileId: string): Promise<void> {
-  if (!Device.isDevice) return;
+  if (Platform.OS === "web" || !Device.isDevice) return;
   const permission = await Notifications.getPermissionsAsync();
   const finalStatus = permission.status === "granted"
     ? permission.status
