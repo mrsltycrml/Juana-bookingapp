@@ -86,7 +86,7 @@ Only configure the keys for the selected provider. Configure gateway credentials
 5. The migrations create the profile/service/practitioner/schedule/appointment/status/consent/treatment/CRM/payment/transaction/notification/preferences/settings tables, indexes and constraints, booking and consent RPCs, RLS policies, and the service-image Storage bucket. They do not insert real studio-specific services, prices, practitioners, policies, or consent text.
 6. Confirm RLS is enabled on each business table. Client data is scoped to its owner; assigned practitioners have limited appointment/customer access; front desk has operational access; admin manages configuration and staff. Sensitive changes (reservations, consent submissions, rescheduling, cancellation and treatment completion) use constrained database functions. The service-role key bypasses RLS and belongs only in trusted Edge Function configuration.
 
-If you applied the initial schema by pasting it into the Supabase SQL Editor rather than using `supabase db push`, do not re-run the already-applied initial migration. Apply only `supabase/migrations/202610030002_showcase_data.sql` in the SQL Editor, or first repair the CLI migration history using the Supabase CLI.
+If you applied the initial schema by pasting it into the Supabase SQL Editor rather than using `supabase db push`, do not re-run the already-applied initial migration. Apply pending migrations `202610030002_showcase_data.sql` and `202610030003_fix_appointment_status_history_trigger.sql` in order in the SQL Editor, or first repair the CLI migration history using the Supabase CLI.
 
 The app can read existing services and appointments before the showcase migration is applied. To load showcase records, however, apply the showcase migration and deploy its Edge Function; the admin showcase screen reports when this setup is missing. If Metro serves an old bundle, stop Expo and restart with `npx expo start --clear`.
 
@@ -142,7 +142,7 @@ The `expire-reservations` and `appointment-reminders` functions are protected by
 
 ### Stakeholder showcase data
 
-For a presentation, an administrator can open **More → Showcase demo data → Load showcase sample data**. First apply the showcase migration (all pending migrations with `npx supabase db push`, or only `202610030002_showcase_data.sql` in SQL Editor if the initial schema was applied manually), then deploy the `showcase-data` Edge Function:
+For a presentation, an administrator can open **More → Showcase demo data → Load showcase sample data**. First apply the pending migrations (all pending migrations with `npx supabase db push`, or `202610030002_showcase_data.sql` followed by `202610030003_fix_appointment_status_history_trigger.sql` in SQL Editor if the initial schema was applied manually), then deploy the `showcase-data` Edge Function:
 
 ```powershell
 npx supabase functions deploy showcase-data

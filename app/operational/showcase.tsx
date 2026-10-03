@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Alert, Text } from "react-native";
+import { Alert, Platform, Text } from "react-native";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { ActionButton, Card, ErrorText, Heading, Screen, colors } from "@/components/ui";
 import { useAuth } from "@/hooks/use-auth";
@@ -54,20 +54,24 @@ export default function ShowcaseDataScreen() {
     }
   };
 
-  const confirm = (action: "seed" | "clear") => Alert.alert(
-    action === "seed" ? "Load showcase data?" : "Remove showcase data?",
-    action === "seed"
+  const confirm = (action: "seed" | "clear") => {
+    const title = action === "seed" ? "Load showcase data?" : "Remove showcase data?";
+    const message = action === "seed"
       ? "This creates clearly labelled sample services, two temporary practitioner accounts, four temporary client accounts, sample appointments, treatment history, and unpaid demo-only payment placeholders. It does not use real customer or business data or record a payment as successful."
-      : "This permanently removes the showcase records, temporary accounts, and any bookings or treatments created using the sample services. Other studio records are not changed.",
-    [
+      : "This permanently removes the showcase records, temporary accounts, and any bookings or treatments created using the sample services. Other studio records are not changed.";
+    if (Platform.OS === "web") {
+      if (globalThis.confirm(`${title}\n\n${message}`)) void perform(action);
+      return;
+    }
+    Alert.alert(title, message, [
       { text: "Cancel", style: "cancel" },
       {
         text: action === "seed" ? "Load sample data" : "Remove sample data",
         style: action === "clear" ? "destructive" : "default",
         onPress: () => void perform(action),
       },
-    ],
-  );
+    ]);
+  };
 
   if (!isAdmin) {
     return <Screen><Heading title="Showcase data" subtitle="This tool is available to administrators only." /></Screen>;

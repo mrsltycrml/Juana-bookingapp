@@ -34,10 +34,11 @@ export default function CalendarScreen() {
   const rangeStart = mode === "MONTH" ? businessDateKey(new Date(date.getFullYear(), date.getMonth(), 1))
     : mode === "WEEK" ? businessDateKey(new Date(date.getFullYear(), date.getMonth(), date.getDate() - date.getDay())) : key;
   const rangeEnd = mode === "MONTH" ? businessDateKey(new Date(date.getFullYear(), date.getMonth() + 1, 1))
-    : mode === "WEEK" ? businessDateKey(new Date(date.getFullYear(), date.getMonth(), date.getDate() - date.getDay() + 7)) : key;
+    : mode === "WEEK" ? businessDateKey(new Date(date.getFullYear(), date.getMonth(), date.getDate() - date.getDay() + 7))
+      : mode === "AGENDA" ? businessDateKey(new Date(date.getFullYear(), date.getMonth(), date.getDate() + 15)) : key;
   const agenda = appointments.data?.filter((item) => {
     const appointmentDay = businessDateKey(item.starts_at);
-    return mode === "DAY" || mode === "AGENDA" ? appointmentDay === key : appointmentDay >= rangeStart && appointmentDay < rangeEnd;
+    return mode === "DAY" ? appointmentDay === key : appointmentDay >= rangeStart && appointmentDay < rangeEnd;
   }) ?? [];
   const shiftRange = (direction: -1 | 1) => {
     const next = new Date(date);

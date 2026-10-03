@@ -18,6 +18,14 @@ function randomPassword(): string {
   return Array.from(bytes, (byte) => byte.toString(16).padStart(2, "0")).join("");
 }
 
+function errorMessage(error: unknown): string {
+  if (error instanceof Error) return error.message;
+  if (typeof error === "object" && error !== null && "message" in error && typeof error.message === "string") {
+    return error.message;
+  }
+  return "Showcase data operation failed.";
+}
+
 async function getShowcaseUsers(admin: AdminClient) {
   const users = [];
   for (let page = 1; ; page += 1) {
@@ -150,7 +158,7 @@ Deno.serve(async (request) => {
     } catch (error) {
       const cleanupErrors = await removeShowcaseUsers(admin, runId);
       const { error: abortError } = await caller.rpc("abort_showcase_data", { p_run_id: runId });
-      const failure = error instanceof Error ? error.message : "Showcase seeding failed.";
+      const failure = errorMessage(error);
       if (cleanupErrors.length || abortError) {
         throw new Error(`${failure} Cleanup failed${cleanupErrors.length ? `: ${cleanupErrors.join("; ")}` : ""}${abortError ? `: ${abortError.message}` : ""}`);
       }
@@ -158,6 +166,6 @@ Deno.serve(async (request) => {
     }
   } catch (error) {
     console.error("Showcase data operation failed", error);
-    return jsonResponse({ error: error instanceof Error ? error.message : "Showcase data operation failed." }, 500);
+    return jsonResponse({ error: errorMessage(error) }, 500);
   }
 });
